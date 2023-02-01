@@ -1,0 +1,10 @@
+.navbar-brand{
+    font-size: 35px;
+    font-family: Tahoma;
+}
+body{
+    background-color: #191718;
+}
+.col1{
+    justify-content: center;
+}
