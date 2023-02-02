@@ -65,7 +65,7 @@ app.post('/user',(req,res) => {
 app.get("/register",(req,res) => {
     res.render("register");
 });
-
+//Post in database
 app.post("/register",async(req,res) => {
     try{
         const registeruser = new Register({
