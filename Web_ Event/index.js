@@ -48,14 +48,6 @@ app.get('/',(req,res) => {
 });
 
 app.post('/user',(req,res) => {
-    const registeruser = new Register({
-        Username : req.body.Username,
-        Password : req.body.Password,
-        Faculty : req.body.Faculty,
-        Email : req.body.Email,
-        Year : req.body.Year
-    });
-
     if(req.body.username == req.registeruser.Username && req.body.password == req.registeruser.Password){
         session = req.session;
         session.userid = req.body.username
