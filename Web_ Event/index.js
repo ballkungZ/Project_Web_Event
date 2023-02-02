@@ -7,6 +7,8 @@ const sessions = require('express-session');
 const cookieParser = require('cookie-parser')
 require('dotenv/config');
 
+const Register = require("./models/Regitser")
+
 const oneDay = 1000 * 60 * 60 * 24;
 app.use(sessions({
     secret:"thisismysecrcetkey",
@@ -15,11 +17,12 @@ app.use(sessions({
     resave: false
 }));
 
+
 app.use(bodyParser.json());
 mongoose.Promise = global.Promise;
 
 app.use(express.json());
-app.use(express.urlencoded({ extended: true}));
+app.use(express.urlencoded({ extended: false}));
 
 app.use(express.static(__dirname));
 
@@ -45,7 +48,15 @@ app.get('/',(req,res) => {
 });
 
 app.post('/user',(req,res) => {
-    if(req.body.username == myusername && req.body.password == mypassword){
+    const registeruser = new Register({
+        Username : req.body.Username,
+        Password : req.body.Password,
+        Faculty : req.body.Faculty,
+        Email : req.body.Email,
+        Year : req.body.Year
+    });
+
+    if(req.body.username == req.registeruser.Username && req.body.password == req.registeruser.Password){
         session = req.session;
         session.userid = req.body.username
         console.log(req.session)
@@ -56,6 +67,32 @@ app.post('/user',(req,res) => {
     }
 })
 
+
+
+
+app.get("/register",(req,res) => {
+    res.render("register");
+});
+
+app.post("/register",async(req,res) => {
+    try{
+        const registeruser = new Register({
+            Username : req.body.Username,
+            Password : req.body.Password,
+            Faculty : req.body.Faculty,
+            Email : req.body.Email,
+            Year : req.body.Year
+        });
+
+        const registered = await registeruser.save();
+        res.status(201).render("index");
+    } catch (error){
+        res.status(400).send(error);
+    }
+});
+
+
+
 app.get('/logout',(req,res) => {
     req.session.destroy();
     res.redirect('/')
@@ -64,9 +101,6 @@ app.get('/logout',(req,res) => {
 app.get('*',(req,res) => {
     res.send('Error 404')
 })
-
-const myusername = "ballzaz1"
-const mypassword = "ballza123z"
 
 var session;
 

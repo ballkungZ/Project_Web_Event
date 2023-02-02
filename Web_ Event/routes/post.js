@@ -1,7 +1,7 @@
 const express = require('express');
 
 const router = express.Router();
-const Post = require('../models/Product')
+const Post = require('../models/Regitser')
 //Get back post
 router.get('/',async(req,res) => {
     try{
