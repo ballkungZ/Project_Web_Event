@@ -2,7 +2,7 @@ module.exports = (app) => {
     const express = require('express');
     const sessions = require('express-session');
     const cookieParser = require('cookie-parser');
-    const Register = require("./models/Regitser");
+    const Register = require("./models/Regiter");
     const bcrypt = require('bcryptjs');
     const jwt = require('jsonwebtoken');
 

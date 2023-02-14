@@ -6,7 +6,9 @@ const cors = require('cors');
 const {graphqlHTTP} = require('express-graphql');
 const { buildSchema} = require('graphql');
 require('dotenv/config');
-const events = [];
+
+const Event = require('./models/event');
+const { events } = require('./models/event');
 
 app.use(bodyParser.json());
 
@@ -41,18 +43,29 @@ app.use('/graphql',graphqlHTTP({
         `),
         rootValue: {
                 events: () => {
-                        return events;
+                        return Event.find().then(events => {
+                                return events.map(event => {
+                                        return {...event._doc};
+                                });
+                        }).catch(err => {
+                                throw err;
+                        });
                 },
                 CreateEvent: args => {
-                        const event = {
-                                _id: Math.random().toString(),
+                        const event = new Event({
                                 title: args.eventInput.title,
                                 description: args.eventInput.description,
                                 price: +args.eventInput.price,
-                                date: args.eventInput.date
-                        };
-                        events.push(event);
-                        return event;
+                                date: new Date(args.eventInput.date)
+                        });
+                        return event.save().then(result => {
+                                console.log(result);
+                                return {...result._doc};
+                        }).catch(err =>{
+                                console.log(err);
+                                throw err;       
+                        });
+                        
                 }
         },
         graphiql: true
