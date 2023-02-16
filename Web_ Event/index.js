@@ -5,12 +5,39 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const {graphqlHTTP} = require('express-graphql');
 const { buildSchema} = require('graphql');
+const bcrypt = require('bcryptjs');
 require('dotenv/config');
 
 const Event = require('./models/event');
-const { events } = require('./models/event');
+const User = require('./models/user');
+
 
 app.use(bodyParser.json());
+
+const events = eventIds => {
+        return Event.find({_id: {$in: eventIds}})
+        .then(events => {
+                return events.map(event => {
+                        return { ...event._doc,
+                                 _id: event.id,
+                                 creator: user.bind(this, event.creator)
+                                };
+                });                
+        })
+        .catch(err => {
+                throw err;
+        });        
+}
+
+const user = userID => {
+        return User.findById(userID)
+        .then(user =>{
+             return {...user._doc,_id: user.id, createdEvents: events.bind(this, user._doc.createdEvents) };   
+        })
+        .catch(err => {
+                throw err;
+        });
+}
 
 app.use('/graphql',graphqlHTTP({
         schema: buildSchema(`
@@ -20,6 +47,14 @@ app.use('/graphql',graphqlHTTP({
                         description: String!
                         price: Float!
                         date: String!
+                        creator: User!
+                }
+
+                type User {
+                        _id: ID!
+                        Email: String!
+                        Password: String
+                        createdEvents: [Event!]  
                 }
 
                 input EventInput {
@@ -28,12 +63,19 @@ app.use('/graphql',graphqlHTTP({
                         price: Float!
                         date: String!
                 }
+
+                input UserInput {
+                        Email: String!
+                        Password: String! 
+                }
+
                 type RootQuery {
                         events:[Event!]!
                 }
 
                 type RootMutation {
                         CreateEvent(eventInput: EventInput): Event
+                        CreateUser(userInput: UserInput): User
                 }
 
                 schema {
@@ -43,9 +85,13 @@ app.use('/graphql',graphqlHTTP({
         `),
         rootValue: {
                 events: () => {
-                        return Event.find().then(events => {
+                        return Event.find()
+                        .populate("creator")
+                        .then(events => {
                                 return events.map(event => {
-                                        return {...event._doc};
+                                        return {...event._doc,_id: event.id,
+                                                creator: user.bind(this, event._doc.creator) 
+                                        };
                                 });
                         }).catch(err => {
                                 throw err;
@@ -56,16 +102,48 @@ app.use('/graphql',graphqlHTTP({
                                 title: args.eventInput.title,
                                 description: args.eventInput.description,
                                 price: +args.eventInput.price,
-                                date: new Date(args.eventInput.date)
+                                date: new Date(args.eventInput.date),
+                                creator: '63ee1a12b1eb7c7751e8adc3'
                         });
+                        let createdEvent;
                         return event.save().then(result => {
-                                console.log(result);
-                                return {...result._doc};
+                                createdEvent = {...result._doc, _id: result._doc._id.toString(), 
+                                        creator: user.bind(this,result._doc.creator)};
+                                return User.findById('63ee1a12b1eb7c7751e8adc3');
+                               
+                        }).then(user => {
+                                if (!user) {
+                                        throw new Error('User not found!!');
+                                }
+                                user.createdEvents.push(event);
+                                return user.save();
+                        }).then(result => {
+                                return createdEvent;
                         }).catch(err =>{
                                 console.log(err);
                                 throw err;       
                         });
                         
+                },
+                CreateUser: args => {
+                        return User.findOne({Email:args.userInput.Email})
+                        .then(user => {
+                                if (user) {
+                                        throw new Error('User exists already');
+                                }
+                                return bcrypt.hash(args.userInput.Password,12)
+                        })
+                        .then(hashedPassword => {
+                                const user = new User({
+                                        Email: args.userInput.Email,
+                                        Password: hashedPassword 
+                                 });
+                                 return user.save();
+                        }).then(result => {
+                                return {...result._doc,Password: null, _id: result.id};
+                        }).catch(err =>{
+                                throw err;
+                        });
                 }
         },
         graphiql: true

@@ -1,26 +1,33 @@
 const mongoose = require('mongoose');
+const Schema =  mongoose.Schema;
 const UserSchema = new mongoose.Schema({
     Username: {
         type:String,
-        require:true
+        required:true
     },
     Password: {
         type:String,
-        require:true
+        required:true
     },
     Faculty:  {
         type:String,
-        require:true
+        required:true
     },
     Email: {
         type:String,
-        require:true,
+        required:true,
         unique:true
     },
     Year: {
         type:String,
-        require:true
+        required:true
     },
+    createdEvents: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Event'
+        }
+    ]
 });
 
 module.exports  = mongoose.model("Register",UserSchema);
