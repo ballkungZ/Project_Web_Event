@@ -3,8 +3,7 @@ module.exports = (app) => {
     const sessions = require('express-session');
     const cookieParser = require('cookie-parser');
     const Register = require("./models/Regiter");
-    const bcrypt = require('bcryptjs');
-    const jwt = require('jsonwebtoken');
+  
 
     const oneDay = 1000 * 60 * 60 * 24;
     app.use(sessions({

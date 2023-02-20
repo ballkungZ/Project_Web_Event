@@ -5,7 +5,8 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const {graphqlHTTP} = require('express-graphql');
 const graphiqlSchema = require('./graphql/scherma/app');
-const graphiqlResolvers = require('./graphql/resolvers/app')
+const graphiqlResolvers = require('./graphql/resolvers/app');
+const isAuth = require('./middleware/is-auth');
 
 require('dotenv/config');
 
@@ -13,6 +14,7 @@ require('dotenv/config');
 
 app.use(bodyParser.json());
 
+app.use(isAuth);
 
 app.use('/api',graphqlHTTP({
         schema: graphiqlSchema,

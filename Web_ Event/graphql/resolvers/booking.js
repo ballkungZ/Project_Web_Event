@@ -1,4 +1,3 @@
-const { dateToString } = require('../../helpers/date');
 const Event = require('../../models/event');
 const Booking = require('../../models/booking');
 const {formBooking, formEvent} = require('./merge');
@@ -6,7 +5,10 @@ const {formBooking, formEvent} = require('./merge');
 
 
 module.exports = {
-    bookings: async () => {
+    bookings: async (args, req) => {
+        if (!req.isAuth) {
+            throw new Error('Unauthenticateced');
+        }
         try {
             const bookings = await Booking.find();
             return bookings.map(booking => {
@@ -16,16 +18,22 @@ module.exports = {
             throw err;
         }
     },
-    bookEvent: async args => {
+    bookEvent: async (args, req) => {
+        if (!req.isAuth) {
+            throw new Error('Unauthenticateced');
+        }
         const fetchedEvent = await Event.findOne({_id: args.eventId});
         const booking = new Booking ({
-            user: '63ee528e290228a808e62a90',
+            user: req.userId,
             event: fetchedEvent
         });
         const result = await booking.save();
         return formBooking(result);
     },
-    cancelBooking: async args => {
+    cancelBooking: async (args, req) => {
+        if (!req.isAuth) {
+            throw new Error('Unauthenticateced');
+        }
         try {
             const booking = await Booking.findById(args.bookingId).populate('event');
             const event = formEvent(booking.event);
