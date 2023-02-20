@@ -14,7 +14,7 @@ require('dotenv/config');
 app.use(bodyParser.json());
 
 
-app.use('/graphql',graphqlHTTP({
+app.use('/api',graphqlHTTP({
         schema: graphiqlSchema,
         rootValue: graphiqlResolvers,
         graphiql: true
@@ -27,7 +27,7 @@ mongoose.connect(process.env.DB_Connect)
         .then(() => console.log('Database Connection ^(*-*)^'))
         .catch((err) => console.error(err))
         app.use(cors())
-        require('./routes/routes.js')(app);
+        require('./routes')(app);
 
 app.listen(PORT, () => console.log('Server Running!!!'))
 
