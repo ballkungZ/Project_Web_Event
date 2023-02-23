@@ -7,22 +7,24 @@ const {graphqlHTTP} = require('express-graphql');
 const graphiqlSchema = require('./graphql/scherma/app');
 const graphiqlResolvers = require('./graphql/resolvers/app');
 const isAuth = require('./middleware/is-auth');
+const ejs = require('ejs');
+const expressLayouts = require('express-ejs-layouts');
+
 
 require('dotenv/config');
 
-app.use((req,res,next) => {
-        res.setHeader('Access-Control-Allow-Origin','*');
-        res.setHeader('Access-Control-Allow-Methods', 'POST,GET,OPTIONS');
-        res.setHeader('Access-Control-Allow-Headers','Content-Type, Authorization');
-        if (req.method === 'OPTIONS') {
-                return res.sendStatus(200);
-        }
-        next();
-});
+app.set('view engine','ejs');
+app.use(expressLayouts);
 
 app.use(bodyParser.json());
 
 app.use(isAuth);
+// static flie
+app.use(express.static('view'));
+app.use('/css',express.static(__dirname + 'view/css'));
+app.use('/js',express.static(__dirname + 'view/js'));
+app.use('/img',express.static(__dirname + 'view/img'));
+
 
 app.use('/api',graphqlHTTP({
         schema: graphiqlSchema,
@@ -30,7 +32,7 @@ app.use('/api',graphqlHTTP({
         graphiql: true
 }));
 
-const PORT = 8000;
+const PORT = 3000;
 mongoose.set('strictQuery', false);
 //Connect to DB
 mongoose.connect(process.env.DB_Connect)

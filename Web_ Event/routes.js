@@ -29,7 +29,7 @@ module.exports = (app) => {
     app.get('/',(req,res) => {
         session = req.session;
         if(session.userid){
-            res.sendFile(__dirname + "/view/Home.html")
+            res.sendFile(__dirname + "/view/Home.ejs")
         }else
         res.sendFile(__dirname + "/view/Login.html")
     });
@@ -63,7 +63,7 @@ module.exports = (app) => {
             const check = await Register.findOne({Username:req.body.username})
 
             if (check.Password === req.body.password){
-                res.sendFile(__dirname + "/view/home.html");
+                res.sendFile(__dirname + "/view/Home.html");
                 session = req.session;
                 session.userid = req.body.username
                 console.log(req.session)
@@ -80,6 +80,7 @@ module.exports = (app) => {
     app.get('/logout',(req,res) => {
         req.session.destroy();
         res.redirect('/')
+        console.log('logouted!!')
     })
 
     //Route Error page
