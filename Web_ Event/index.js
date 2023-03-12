@@ -1,30 +1,29 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const app = express();
 const mongoose = require('mongoose');
 const cors = require('cors');
 const {graphqlHTTP} = require('express-graphql');
 const graphiqlSchema = require('./graphql/scherma/app');
 const graphiqlResolvers = require('./graphql/resolvers/app');
 const isAuth = require('./middleware/is-auth');
-const ejs = require('ejs');
-const expressLayouts = require('express-ejs-layouts');
 
+const app = express();
 
 require('dotenv/config');
 
-app.set('view engine','ejs');
-app.use(expressLayouts);
-
 app.use(bodyParser.json());
 
-app.use(isAuth);
-// static flie
-app.use(express.static('view'));
-app.use('/css',express.static(__dirname + 'view/css'));
-app.use('/js',express.static(__dirname + 'view/js'));
-app.use('/img',express.static(__dirname + 'view/img'));
+app.use((req,res,next) => {
+        res.setHeader('Access-Control-Allow-Origin','*');
+        res.setHeader('Access-Control-Allow-Methods', 'POST,GET,OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers','Content-Type, Authorization');
+        if (req.method === 'OPTIONS') {
+                return res.sendStatus(200);
+        }
+        next();
+});
 
+app.use(isAuth);
 
 app.use('/api',graphqlHTTP({
         schema: graphiqlSchema,
@@ -32,14 +31,12 @@ app.use('/api',graphqlHTTP({
         graphiql: true
 }));
 
-const PORT = 3000;
 mongoose.set('strictQuery', false);
-//Connect to DB
-mongoose.connect(process.env.DB_Connect)
-        .then(() => console.log('Database Connection ^(*-*)^'))
-        .catch((err) => console.error(err))
-        app.use(cors())
-        require('./routes')(app);
-
-app.listen(PORT, () => console.log('Server Running!!!'))
+mongoose.connect(`mongodb+srv://ballzaz1:Ballza123z@cluster0.ipoxb6b.mongodb.net/?retryWrites=true&w=majority`)
+  .then(() => {
+    app.listen(8000);
+  })
+  .catch(err => {
+    console.log(err);
+  });
 
